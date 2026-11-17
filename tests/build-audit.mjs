@@ -118,13 +118,16 @@ try {
 }
 
 const failed = results.filter((r) => !r.pass);
+const onNode22 = process.versions.node.split('.')[0] === '22';
 const audit = {
   schema: 'launch-signal/build-audit/v1',
   generated_at_utc: new Date().toISOString(),
   duration_ms: Date.now() - T0,
   node_version: process.version,
-  node22_verified: false,
-  node22_note: 'No Node 22 executable was found on this machine; grader-runtime compatibility remains unverified.',
+  node22_verified: onNode22,
+  node22_note: onNode22
+    ? 'This audit ran on Node 22, the grader runtime.'
+    : 'This audit did not run on Node 22; rerun it with the grader runtime before claiming compatibility.',
   input_sha256: sha(readFileSync(input)),
   checks: results,
   summary: { total: results.length, passed: results.length - failed.length, failed: failed.length, failed_names: failed.map((f) => f.name) },

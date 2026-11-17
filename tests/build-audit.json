@@ -1,10 +1,10 @@
 {
   "schema": "launch-signal/build-audit/v1",
-  "generated_at_utc": "2026-11-17T01:14:11.106Z",
-  "duration_ms": 407,
-  "node_version": "v26.12.1",
-  "node22_verified": false,
-  "node22_note": "No Node 22 executable was found on this machine; grader-runtime compatibility remains unverified.",
+  "generated_at_utc": "2026-11-17T01:20:17.958Z",
+  "duration_ms": 446,
+  "node_version": "v22.22.0",
+  "node22_verified": true,
+  "node22_note": "This audit ran on Node 22, the grader runtime.",
   "input_sha256": "42a71213519479f3a180cc5010cbbf6bd18a2447fa0ad29e4c5122b6c9184393",
   "checks": [
     {
