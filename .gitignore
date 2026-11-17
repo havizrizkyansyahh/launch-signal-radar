@@ -1,0 +1,26 @@
+# Generated local runs; final source screenshots remain tracked.
+/out/
+/out-*/
+/coverage/
+/node_modules/
+
+# Never publish credentials or private provenance exports.
+.env
+.env.*
+!.env.example
+*keypair*.json
+wallet.json
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.jsonl
+/transcripts/
+/transcripts*.tar.gz
+/makefun-run.json
+*.log
+.DS_Store
+
+# Local sealed competition input (fetch from the official kit, do not vendor).
+/input/snapshot.json

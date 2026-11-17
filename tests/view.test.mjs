@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import vm from 'node:vm';
+import { readFileSync, existsSync } from 'node:fs';
+const source = new URL('../dashboard/view.js', import.meta.url);
+const board = JSON.parse(readFileSync(new URL('../out-phase2-a/board.json', import.meta.url)));
+
+test('offline view filters actual data and sorts without rewriting global model ranks', () => {
+  assert.ok(existsSync(source), 'view behavior is not implemented');
+  const ctx = vm.createContext({}); vm.runInContext(readFileSync(source, 'utf8'), ctx);
+  const v = ctx.LaunchView;
+  const defaults = v.selectRows(board.rows, {});
+  assert.equal(defaults.length, 196);
+  assert.equal(defaults[0].slug, 'steakhouse-financial');
+  assert.equal(defaults[0].rank, 20);
+  assert.equal(v.selectRows(board.rows, { scope: 'all' }).length, 758);
+  assert.equal(v.selectRows(board.rows, { scope: 'watchlist' }).length, 40);
+  assert.equal(v.selectRows(board.rows, { scope: 'all', token: 'token-recorded' }).length, 416);
+  assert.equal(v.selectRows(board.rows, { scope: 'all', token: 'no-token-recorded' }).length, 342);
+  const selected = v.selectRows(board.rows, { scope: 'all', query: 'STEAKHOUSE', chain: 'Ethereum', category: 'Risk Curators' });
+  assert.equal(selected.length, 1);
+  assert.equal(selected[0].slug, 'steakhouse-financial');
+  assert.equal(v.selectRows(board.rows, { query: 'nothing-matches-this-fixture' }).length, 0);
+  const ascending = v.selectRows(board.rows, { scope: 'all', sort: 'implied_value_usd', direction: 'asc' });
+  assert.equal(ascending[0].rank, 758);
+  const before = JSON.stringify(board);
+  const growth = v.selectRows(board.rows, { scope: 'all', sort: 'change_7d', direction: 'desc' });
+  assert.equal(growth[0].slug, 'shift-defi');
+  assert.equal(growth.at(-1).change_7d, null);
+  assert.equal(JSON.stringify(board), before);
+  assert.equal(v.money(null), 'Not recorded');
+  assert.match(v.money(886101045), /886/);
+});

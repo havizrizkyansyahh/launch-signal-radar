@@ -1,0 +1,205 @@
+{
+  "schema": "launch-signal/build-audit/v1",
+  "generated_at_utc": "2026-11-17T01:14:11.106Z",
+  "duration_ms": 407,
+  "node_version": "v26.12.1",
+  "node22_verified": false,
+  "node22_note": "No Node 22 executable was found on this machine; grader-runtime compatibility remains unverified.",
+  "input_sha256": "42a71213519479f3a180cc5010cbbf6bd18a2447fa0ad29e4c5122b6c9184393",
+  "checks": [
+    {
+      "name": "main.ts exits 0 twice",
+      "pass": true,
+      "detail": [
+        {
+          "status": 0,
+          "stdout": "Final packaging: 758 ranked rows, 40/40 watchlist; sealed 2026-11-14",
+          "stderr": ""
+        },
+        {
+          "status": 0,
+          "stdout": "Final packaging: 758 ranked rows, 40/40 watchlist; sealed 2026-11-14",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "name": "two clean trees are byte-identical",
+      "pass": true,
+      "detail": {
+        "files": 12
+      }
+    },
+    {
+      "name": "copied dashboard matches repository source",
+      "pass": true,
+      "detail": {
+        "files": 5
+      }
+    },
+    {
+      "name": "copied screenshots match repository images",
+      "pass": true,
+      "detail": 3
+    },
+    {
+      "name": "vendor helper is byte-identical to official kit",
+      "pass": true,
+      "detail": "9ca51b6e5cd84fe46cb0efa61e2ea99365a1fb0e21f2b75e6007f977f0dc326e"
+    },
+    {
+      "name": "board holds 100-4000 real unique slugs",
+      "pass": true,
+      "detail": 758
+    },
+    {
+      "name": "ranks are exactly 1..N",
+      "pass": true,
+      "detail": 758
+    },
+    {
+      "name": "values positive, in range, nonincreasing and varied",
+      "pass": true,
+      "detail": {
+        "min": 400664,
+        "max": 14780931658
+      }
+    },
+    {
+      "name": "every farm_steps entry is 3-12 strings of 20-600 chars",
+      "pass": true,
+      "detail": 5306
+    },
+    {
+      "name": "every official watchlist member is ranked",
+      "pass": true,
+      "detail": 40
+    },
+    {
+      "name": "board.json is under 8 MiB",
+      "pass": true,
+      "detail": 2282548
+    },
+    {
+      "name": "dashboard has index.html plus css and js",
+      "pass": true,
+      "detail": [
+        "app.css",
+        "app.js",
+        "index.html",
+        "model.js",
+        "view.js"
+      ]
+    },
+    {
+      "name": "dashboard file count and total bytes within caps",
+      "pass": true,
+      "detail": {
+        "files": 5,
+        "bytes": 58542
+      }
+    },
+    {
+      "name": "dashboard source text is under 65536 bytes",
+      "pass": true,
+      "detail": 58542
+    },
+    {
+      "name": "dashboard file names are dossier-safe",
+      "pass": true,
+      "detail": [
+        "app.css",
+        "app.js",
+        "index.html",
+        "model.js",
+        "view.js"
+      ]
+    },
+    {
+      "name": "no network addresses in prohibited HTML/CSS/JS contexts",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no unsafe DOM sinks in dashboard scripts",
+      "pass": true,
+      "detail": [
+        "app.js",
+        "model.js",
+        "view.js"
+      ]
+    },
+    {
+      "name": "root data.js exists and stays outside dashboard/",
+      "pass": true,
+      "detail": 2282572
+    },
+    {
+      "name": "three valid screenshots within count, byte and dimension caps",
+      "pass": true,
+      "detail": [
+        {
+          "name": "01-board.jpg",
+          "bytes": 150893,
+          "height": 900,
+          "width": 1440,
+          "ok": true
+        },
+        {
+          "name": "02-detail.jpg",
+          "bytes": 196849,
+          "height": 900,
+          "width": 1440,
+          "ok": true
+        },
+        {
+          "name": "03-filtered.jpg",
+          "bytes": 142590,
+          "height": 900,
+          "width": 1440,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "name": "dossier.json equals an independent buildDossier rebuild",
+      "pass": true,
+      "detail": {
+        "bytes": 714073,
+        "sha256": "f46be647d14eecc89cf1dba3bd0a3606457a3cff1cef81a1480cd1284779efa9"
+      }
+    },
+    {
+      "name": "dossier is at most 1.5 MiB",
+      "pass": true,
+      "detail": 714073
+    },
+    {
+      "name": "dossier text is complete (no cut marker)",
+      "pass": true,
+      "detail": {
+        "text_bytes": 58951
+      }
+    },
+    {
+      "name": "dossier carries exactly three images",
+      "pass": true,
+      "detail": [
+        "01-board.jpg",
+        "02-detail.jpg",
+        "03-filtered.jpg"
+      ]
+    },
+    {
+      "name": "no secrets or private paths embedded in shipped artifacts",
+      "pass": true,
+      "detail": "path scan"
+    }
+  ],
+  "summary": {
+    "total": 24,
+    "passed": 24,
+    "failed": 0,
+    "failed_names": []
+  }
+}

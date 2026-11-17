@@ -1,0 +1,32 @@
+/* Run this test expression in the actual generated file:// page, not in Node. */
+(function () {
+  const results = [], $ = (id) => document.getElementById(id);
+  const check = (name, ok, actual) => results.push({ name, pass: !!ok, actual });
+  const count = () => document.querySelectorAll('#rows tr').length;
+  const change = (id, value) => { $(id).value = value; $(id).dispatchEvent(new Event('change', { bubbles: true })); };
+  const search = (value) => { $('search').value = value; $('search').dispatchEvent(new Event('input', { bubbles: true })); };
+  if ($('methodology').open) $('methodology').close();
+  if ($('detail').open) $('detail').close();
+  $('reset').click();
+  check('reset clears all filters', count() === 196 && $('search').value === '', count());
+  change('scope', 'watchlist'); check('watchlist complete', count() === 40, count());
+  change('scope', 'all'); change('token', 'token-recorded');
+  check('recorded tokens separate', count() === 416, count());
+  change('token', 'no-token-recorded'); check('no-token record universe', count() === 342, count());
+  change('category', 'Risk Curators'); change('chain', 'Ethereum'); search('gauntlet');
+  check('combined category chain search', count() === 1 && document.querySelector('#rows tr')?.dataset.slug === 'gauntlet', count());
+  document.querySelector('#rows button')?.click();
+  check('real detail opens', $('detail').open && $('detail-title')?.textContent === 'Gauntlet', $('detail-title')?.textContent);
+  check('detail has model and concrete plan', document.querySelectorAll('.factor-grid>div').length === 4 && document.querySelectorAll('.farm-list li').length === 7, document.querySelectorAll('.farm-list li').length);
+  $('detail').close(); $('reset').click();
+  document.querySelector('[data-sort=implied_value_usd]').click();
+  check('first value-sort click reverses default', document.querySelector('[data-sort=implied_value_usd]').parentElement.getAttribute('aria-sort') === 'ascending', document.querySelector('[data-sort=implied_value_usd]').parentElement.getAttribute('aria-sort'));
+  search('nothing-will-match-this-value'); check('honest empty state', count() === 0 && !$('empty').hidden, count());
+  $('empty-reset').click(); check('empty reset restores candidates', count() === 196, count());
+  $('method-open').click(); check('methodology opens', $('methodology').open && $('method-body').textContent.includes('n/(n+6)'), $('methodology').open);
+  $('methodology').close();
+  check('desktop provenance fits viewport', innerWidth < 1101 || document.querySelector('.provenance').getBoundingClientRect().bottom <= innerHeight, document.querySelector('.provenance').getBoundingClientRect().bottom);
+  check('result label distinguishes results from viewport', $('result-count').textContent.includes('in results'), $('result-count').textContent);
+  check('no observed page errors', LaunchDiagnostics.errors.length === 0, [...LaunchDiagnostics.errors]);
+  return JSON.stringify(results);
+})();
