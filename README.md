@@ -20,6 +20,8 @@ LAUNCH SIGNAL is an offline research workstation over one sealed DefiLlama snaps
 
   The winner is chosen by holdout MdAPE, not by preference. On a second deterministic split the winner changes from `global` to `category` (MdAPE 99.27% vs 98.75%), so the dashboard prints that instability instead of claiming a validated edge.
 
+  Two limits of that table, stated because they bound what it can support. First, the family is selected on the same 49 holdout rows it is reported on, so 85.80% is optimistic for an unseen protocol; a protocol-level nested split was not run. Second, the second split is not an independent replication: salt `b` puts 40 of those 49 holdout rows into its own fit set (100 fit / 28 holdout), so it only probes how much the choice moves. A 2026-11-17 attempt to beat `global` by tuning on the fit split alone (5-fold internal CV over log-space, ridge, growth/age interactions and robust losses) improved CV MdAPE from 88.31% to 82.04% but regressed on the untouched holdout to 88.11%, so it was rejected and the shipped model is unchanged.
+
 - **Values.** TVL × shrunk peer multiple × bounded growth factor × bounded tracking factor, with a heuristic low/high range that widens for sparse samples, missing growth, missing or future tracking dates and unobservable lineage.
 - **Farm economics.** Each plan is priced: transactions per step at an assumed 0.35 USD/tx, a 2.50 USD bridge assumption for multi-chain protocols, total cost, expected gross at a heavily discounted 2% reward share of the hypothetical value allocated by TVL share, net, breakeven multiple and a verdict. On this snapshot the board is **224 farm / 94 thin / 440 skip**; research-only families and zero-capital rows are `skip` by construction, not by guesswork.
 
