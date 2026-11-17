@@ -17,7 +17,7 @@ test('farm research plans adapt actions and budget to category without inventing
     assert.ok(plan.steps.length >= 3 && plan.steps.length <= 12);
     for (const step of plan.steps) assert.ok(step.trim().length >= 20 && step.trim().length <= 600, step);
     const all = plan.steps.join(' ');
-    for (const term of [/illustrative/i, /not live/i, /official domain/i, /contract/i, /stop/i, /minute/i, /day/i]) assert.match(all, term);
+    for (const term of [/illustrative/i, /not live/i, /official contract/i, /stop/i, /\bmin\b/i, /days?/i]) assert.match(all, term);
     assert.ok(!/https?:|guaranteed|earn points/i.test(all));
   }
   const bridge = model.farmPlan(p('Bridge'));

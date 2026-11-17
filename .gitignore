@@ -24,3 +24,5 @@ wallet.json
 
 # Local sealed competition input (fetch from the official kit, do not vendor).
 /input/snapshot.json
+
+/tests/fixtures-sealed.json

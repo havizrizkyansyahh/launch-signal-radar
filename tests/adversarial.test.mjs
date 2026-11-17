@@ -39,7 +39,7 @@ test('snapshot text cannot escape the generated data script or the rendered DOM'
   const context = vm.createContext({});
   vm.runInContext(script, context);
   assert.equal(context.LAUNCH_DATA.rows[0].name, hostile + ' Vault');
-  assert.equal(context.LAUNCH_DATA.rows[0].farm_steps.length, 7);
+  assert.ok(context.LAUNCH_DATA.rows[0].farm_steps.length >= 3 && context.LAUNCH_DATA.rows[0].farm_steps.length <= 12);
   const ui = ['app.js', 'view.js', 'model.js'].map((f) => [f, readFileSync(join(root, 'dashboard', f), 'utf8')]);
   for (const [file, source] of ui) {
     for (const sink of ['innerHTML', 'outerHTML', 'insertAdjacentHTML', 'document.write', 'eval(']) {

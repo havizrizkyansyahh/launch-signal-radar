@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import vm from 'node:vm';
+import { readFileSync } from 'node:fs';
+import { sealedInput } from './kit.js';
+import '../dashboard/model.js';
+const board = globalThis.LaunchModel.buildRadar(JSON.parse(readFileSync(sealedInput, 'utf8')));
+const ctx = vm.createContext({});
+vm.runInContext(readFileSync(new URL('../dashboard/view.js', import.meta.url), 'utf8'), ctx);
+const v = ctx.LaunchView;
+
+test('verdict filters, net sorting and band formatting come from generated data', () => {
+  assert.equal(typeof v.verdict, 'function');
+  assert.equal(v.verdict('farm').label, 'FARM');
+  assert.equal(v.verdict('thin').label, 'THIN');
+  assert.equal(v.verdict('skip').label, 'SKIP');
+  assert.equal(v.verdict('farm').mark, '●●');
+  assert.equal(v.verdict('thin').mark, '●');
+  assert.equal(v.verdict('skip').mark, '○');
+  const farms = v.selectRows(board.rows, { scope: 'all', verdict: 'farm' });
+  assert.equal(farms.length, board.economics_summary.verdicts.farm);
+  assert.ok(farms.every((r) => r.economics.verdict === 'farm'));
+  const byNet = v.selectRows(board.rows, { scope: 'all', sort: 'net' });
+  for (let i = 1; i < byNet.length; i++) assert.ok(byNet[i - 1].economics.net_usd >= byNet[i].economics.net_usd);
+  const combined = v.selectRows(board.rows, { scope: 'candidates', verdict: 'skip', token: 'no-token-recorded' });
+  assert.ok(combined.every((r) => r.candidate && r.economics.verdict === 'skip'));
+  assert.equal(v.selectRows(board.rows, { scope: 'all', verdict: 'farm', category: 'Definitely absent category' }).length, 0);
+  assert.equal(v.net(null), '—');
+  assert.match(v.net(-2.5), /-\$2\.50/);
+  assert.match(v.band(100, 300), /100.*300/);
+});

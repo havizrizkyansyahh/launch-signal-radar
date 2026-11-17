@@ -44,7 +44,6 @@
       new Set(s.watchlist).size === s.watchlist.length, 'watchlist membership/uniqueness');
     return { as_of: s.as_of, source: s.source, floor_usd: s.floor_usd, protocols, watchlist: [...s.watchlist] };
   }
-  // R7 quantiles: linear interpolation at (n-1)*p. Work in log ratio space.
   function quantile(values, p) {
     const xs = [...values].sort((a, b) => a - b);
     if (!xs.length) return 0;
@@ -98,7 +97,6 @@
   const VALUE_CAP = 100000000000000;
   const dollars = (n) => Math.round(clamp(n, 1, VALUE_CAP));
   function valueProtocol(protocol, snapshot, calibration = calibratePeers(snapshot)) {
-    // Leave the target asset out: an observed market cap must not price itself.
     const selfExcluded = calibration.peers.some((p) => p.slug === protocol.slug);
     const c = selfExcluded ? calibratePeers(snapshot, protocol.slug) : calibration;
     const peer = c.categories.find((x) => x.category === protocol.category) ||
@@ -118,7 +116,6 @@
     if (protocol.tvl_usd === 0) reasons.push('zero-tvl-floor');
     const watchlist = snapshot.watchlist.includes(protocol.slug);
     if (!watchlist) reasons.push('lineage-unobservable');
-    // A modelling scenario, not a calibrated confidence interval or launch probability.
     const spread = Math.max(Math.log(2), peer.log_center - peer.log_low, peer.log_high - peer.log_center);
     let width = spread + (peer.peer_count < 5 ? Math.log(1.5) : 0);
     if (c.peer_count === 0) width += Math.log(2);
@@ -164,61 +161,63 @@
     const research = risks.length > 0 || ['general-research', 'restricted', 'derivatives'].includes(family);
     const mode = research ? 'research-only' : 'conditional-small-test';
     const budget = { label: 'Illustrative assumptions, not live fees or required spending',
-      capital_usd: research ? 0 : 100, fees_usd: research ? 0 : 10,
+      capital_usd: research ? 0 : 5000, fees_usd: research ? 0 : 10,
       active_minutes: research ? 60 : 90, horizon_days: 14, slippage_cap_pct: research ? 0 : 1 };
     const actions = {
-      lending: ['If independently verified and eligible, inspect collateral, liquidation thresholds and available withdrawal liquidity. For a supply interface, test a small unlevered supply; for debt-only CDPs, simulate mint/redeem first without opening debt.',
-        'Use only a verified supported asset; inspect allowances and redemption limits. Test the smallest permitted withdrawal before considering any longer exposure. Stop if principal cannot be redeemed within the stated budget.'],
-      liquidity: ['If independently verified, inspect a supported pool, depth, fee tier and asset risk. Test a small swap within the illustrative 1% slippage cap; do not assume LP activity earns incentives.',
-        'Before any LP test, quantify impermanent-loss exposure and range risk. Preview removing liquidity and a return swap; stop if the round trip exceeds the fee cap or the exit cannot be verified.'],
-      vault: ['Locate a verified accessible vault or strategy rather than assuming the manager itself accepts deposits. Read manager permissions, assets, loss exposure, lockups and redemption queues before any conditional small deposit.',
-        'If the vault is eligible, first test its smallest supported deposit and redeem. Record share conversion, exit delay and asset received; do not loop deposits, borrow to farm or assume any points campaign exists.'],
-      derivatives: ['Research-only: inspect margin, liquidation, funding and settlement rules in documentation or a verified simulation. No leveraged position, premium payment or live trade is required by this plan.',
-        'Record a simulated entry and adverse-price exit, including funding and liquidation sensitivity. Stop research if settlement rules or contract identity cannot be independently verified.'],
-      restricted: ['Research-only: check jurisdiction, eligibility, custody, asset backing and redemption documentation. Do not bypass access restrictions or assume a public deposit interface exists.',
-        'Map the legal/technical redemption path and counterparty risks without depositing. Stop if eligibility, custody segregation or withdrawal rights remain unverifiable.'],
-      'general-research': ['Research-only: identify what the product actually permits using verified documentation. Map supported assets, permissions and exit mechanisms; no deposit, trade or approval is needed.',
-        'Write a candidate interaction and its failure/exit conditions on paper. Stop if the category, official interface or redemption path cannot be independently established.'],
+      lending: ['If verified and eligible, read collateral, liquidation and withdrawal rules; test a small unlevered supply.', 'Use only a verified asset; test the smallest withdrawal before longer exposure.'],
+      liquidity: ['If verified, inspect pool depth, fee tier and asset risk; test a small swap inside the 1% slippage cap.', 'Quantify impermanent-loss and range risk; preview the exit before any deposit.'],
+      vault: ['Find a verified accessible vault; read permissions, loss exposure, lockups and exit queues first.', 'Test the smallest deposit and redeem, recording share conversion and exit delay.'],
+      derivatives: ['Research-only: read margin, liquidation, funding and settlement rules or use a verified simulation.', 'Model a simulated entry and adverse exit; no live leveraged position is required.'],
+      restricted: ['Research-only: check jurisdiction, eligibility, custody, backing and redemption terms.', 'Map the redemption path and counterparty risk without depositing.'],
+      'general-research': ['Research-only: establish what the product permits from verified documentation.', 'Write the candidate interaction and its exit conditions on paper; deposit nothing.'],
     };
     const name = p.name.slice(0, 90), chain = [...p.chains].sort(compare)[0]?.slice(0, 70) || 'an independently verified supported chain';
     const status = classifyTokenRecord(p) === 'token-recorded' ?
-      'Token recorded: this is post-token product research, not proof of a future token launch.' :
-      'No token recorded in the snapshot: verify current token status independently; absence of a record is not proof of no token.';
+      'Token recorded: post-token research, not proof of a future launch.' :
+      'No token recorded: verify status independently; absence is not proof of no token.';
     const actionSteps = risks.length ? [
       'Research-only product-risk exclusion: inspect whether this is a bridge, wrapper, staked asset, versioned product or exchange-related instrument. Do not treat its TVL as evidence of an independent pre-token opportunity.',
       'Trace the underlying asset and verified redemption/custody mechanism in official documentation. No bridge transfer, staking transaction or deposit is required; stop if lineage or exit rights cannot be established.',
     ] : actions[family];
     return { family, mode, budget, steps: [
-      `Verify ${name}: independently establish the official domain and contract addresses on ${chain} using trusted primary references. The sealed snapshot supplies neither an official URL nor a contract address; stop on any mismatch.`,
+      `Verify ${name}: confirm official contracts on ${chain} from primary sources; the snapshot has none. Stop on mismatch.`,
       `${status} Recorded category: ${cat}. Verify that any proposed operation is currently available and eligible. This plan asserts no live points, rewards, fees or airdrop campaign.`,
-      `Illustrative assumptions, not live quotes: capital at risk up to $${budget.capital_usd}; separate nonrecoverable network/gas/transaction fees up to $${budget.fees_usd}; ${budget.active_minutes} active minutes over ${budget.horizon_days} days. Principal is not a fee and may be lost. These are ceilings, not required spending.`,
+      `Illustrative, not live: capital <= $${budget.capital_usd}, gas/fees <= $${budget.fees_usd}, ${budget.active_minutes} min over ${budget.horizon_days} days. Principal may be lost.`,
       ...actionSteps,
-      'Over the illustrative 14-day research window, log verified documentation, transaction receipts only if a conditional test is chosen, and actual costs. Review once per week; do not manufacture volume or expect a reward from repeated activity.',
-      'Stop for unverified domain/contracts, ineligibility, unsafe approvals, missing exit liquidity, or any capital, gas or slippage ceiling breach. Revoke unnecessary approvals if any were granted, record withdrawal results and stop rather than chase sunk costs.',
+            'Log verified documentation and real costs, review weekly, manufacture no volume; stop on unverified contracts, ineligibility, unsafe approvals, thin exit liquidity or any budget breach.',
     ] };
   }
   function buildRadar(input) {
-    const snapshot = parseSnapshot(input), calibration = calibratePeers(snapshot);
+    const snapshot = parseSnapshot(input), calibration = calibratePeers(snapshot), validation = validateModels(snapshot);
     const rows = snapshot.protocols.map((p) => {
       const row = valueProtocol(p, snapshot, calibration), risk = productRisks(p);
       const { steps, ...plan } = farmPlan(p);
       return { ...row, risk_flags: risk,
         candidate: row.token_status === 'no-token-recorded' && (!risk.length || row.watchlist),
         lineage_status: row.watchlist ? 'official-watchlist-rule' : 'parent-lineage-not-supplied',
-        farm_steps: steps, plan };
+        farm_steps: steps, plan,
+        economics: { ...economics({ capital_usd: plan.budget.capital_usd, steps: steps.length, tx_per_step: familyTx[plan.family] || 1,
+          chains: p.chains.length, tvl_usd: p.tvl_usd, implied_value_usd: row.implied_value_usd, horizon_days: plan.budget.horizon_days,
+          principal_risk: familyRisk[plan.family] ?? 0.6 }), family: plan.family, mode: plan.mode } };
     }).sort((a, b) => b.implied_value_usd - a.implied_value_usd || compare(a.slug, b.slug))
       .map((row, i) => ({ ...row, rank: i + 1 }));
+    const verdicts = { farm: 0, thin: 0, skip: 0 };
+    for (const r of rows) verdicts[r.economics.verdict]++;
     return { schema: 'launch-signal/v1', as_of: snapshot.as_of, source: snapshot.source,
       floor_usd: snapshot.floor_usd,
-      disclaimer: 'Sealed snapshot, no live data. Hypothetical token market capitalization, not a token price, FDV, issuance forecast or promised airdrop. No token recorded does not prove no token exists.',
+      validation,
+      economics_summary: { verdicts,
+        thresholds: 'farm: net>=2x costs, risk<=0.40',
+        assumptions: 'gas 0.35/tx, bridge 2.5, reward share 2%' },
+      disclaimer: 'Sealed snapshot, hypothetical value; not a price, forecast or airdrop promise.',
       methodology: {
-        formula: 'TVL x robust category/global peer multiple x bounded 7-day growth factor x bounded tracking-history factor',
-        peers: 'Positive recorded market cap / positive TVL only; R7 log-space quantiles; global p10/p90 winsorization; category log-median shrinkage n/(n+6). Repeated CoinGecko IDs aggregate once. Target asset excluded from its own calibration.',
-        growth: 'exp(0.35 * log1p(clamp(reported growth,-75,100)/100)); missing = 1. Raw reported growth is preserved.',
-        age: 'clamp(1 + 0.08*log2((snapshot-relative tracking days+30)/395),0.8,1.2); missing/future = 1. Tracking date is not launch date or proof of token-free age.',
-        uncertainty: 'Heuristic scenarios from peer log-quartile dispersion, minimum factor 2; wider for sparse/no peers, missing/clipped growth, missing/future age and unobservable lineage. Not calibrated confidence or launch probabilities.',
-        fallback: 'No category peers: global. No peers anywhere: explicitly assumed 1x TVL with wide uncertainty. Zero TVL: $1 validity floor, not economic value. All values rounded to integer dollars, capped at $100 trillion.',
-        limitations: 'TVL may overlap; market cap is not FDV or exit liquidity. Parent relationships, official domains/contracts, live fees, token supply, points, eligibility and actual rewards are absent. Outside-watchlist lineage is unknown. All farming budgets are illustrative ceilings, not live quotes.',
+        formula: 'TVL x peer multiple x growth x tracking',
+        peers: 'positive mcap/TVL only; R7 log quantiles; p10/p90 clip; shrink n/(n+6); target excluded',
+        growth: 'exp(0.35*log1p(clamp(g,-75,100)/100)); missing=1',
+        age: 'clamp(1+0.08*log2((days+30)/395),0.8,1.2); missing/future=1',
+        uncertainty: 'peer quartile dispersion, min 2x; wider when data is thin or missing',
+        fallback: 'no peers -> 1x TVL with wide range; zero TVL -> 1 USD floor',
+        limitations: 'TVL overlaps; not FDV or exit liquidity; lineage and live fees absent',
       },
       coverage: { protocols: rows.length, watchlist_total: snapshot.watchlist.length,
         watchlist_covered: rows.filter((r) => r.watchlist).length,
@@ -258,6 +257,88 @@
     return 'globalThis.LAUNCH_DATA=' + JSON.stringify(data).replace(/</g, '\\u003c')
       .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029') + ';\n';
   }
+  function fnv(s) { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return h >>> 0; }
+  const priceable = (p) => classifyTokenRecord(p) === 'token-recorded' && p.mcap_usd > 0 && p.tvl_usd > 0;
+  const growthArg = (p) => Math.log1p((p.change_7d === null ? 0 : clamp(p.change_7d, -75, 100)) / 100);
+  function splitPeers(snapshot, salt = 'a') {
+    const all = snapshot.protocols.filter(priceable).sort((a, b) => compare(a.slug, b.slug));
+    const fit = [], holdout = [];
+    for (const p of all) (fnv(salt + ':' + p.slug) % 10 < 7 ? fit : holdout).push(p);
+    return { salt, eligible: all.length, fit, holdout };
+  }
+  function fitFamilies(fit, asOf) {
+    const groups = new Map();
+    for (const p of fit) { if (!groups.has(p.category)) groups.set(p.category, []); groups.get(p.category).push(Math.log(p.mcap_usd / p.tvl_usd)); }
+    const category = {};
+    for (const [c, xs] of [...groups].sort((a, b) => compare(a[0] || '', b[0] || ''))) category[c || '\u0000'] = xs.length >= 5 ? quantile(xs, 0.5) : null;
+    const global = quantile(fit.map((p) => Math.log(p.mcap_usd / p.tvl_usd)), 0.5);
+    let best = { g: 0, a: 0, mdape: Infinity };
+    for (let g = 0; g <= 1.0001; g += 0.1) for (let a = -0.15; a <= 0.1501; a += 0.05) {
+      const errs = fit.map((p) => Math.abs(baseLog(p) + g * growthArg(p) + a * ageArg(p, asOf) - Math.log(p.mcap_usd / p.tvl_usd))).sort((x, y) => x - y);
+      const mdape = errs[Math.floor(errs.length / 2)] ?? Infinity;
+      if (mdape < best.mdape) best = { g: round2(g), a: round2(a), mdape };
+    }
+    return { global_log: global, category_log: category, growth_exp: best.g, age_exp: best.a, fit_n: fit.length };
+    function baseLog(p) { const c = category[p.category || '\u0000']; return c == null ? global : c; }
+  }
+  const round2 = (n) => Math.round(n * 100) / 100;
+  function ageArg(p, asOf) { const d = p.listed_at === null ? null : dayNumber(asOf) - dayNumber(p.listed_at); return d === null || d < 0 ? 0 : Math.log2((d + 30) / 395); }
+  function multipleOf(family, p, params, asOf) {
+    if (family === 'naive-tvl') return 1;
+    const c = params.category_log[p.category || '\u0000'];
+    const base = family === 'global' || c == null ? Math.exp(params.global_log) : Math.exp(c);
+    if (family !== 'category-growth-age') return base;
+    return base * Math.exp(params.growth_exp * growthArg(p)) * Math.exp(params.age_exp * ageArg(p, asOf));
+  }
+  function accuracy(pairs) {
+    const errs = pairs.map((x) => Math.abs(x.pred - x.actual) / x.actual).sort((a, b) => a - b);
+    const n = errs.length, mean = errs.reduce((s, x) => s + x, 0) / n;
+    const rank = (xs) => { const order = xs.map((v, i) => [v, i]).sort((a, b) => a[0] - b[0]); const r = new Array(xs.length); order.forEach(([, i], k) => { r[i] = k; }); return r; };
+    const px = rank(pairs.map((x) => x.pred)), py = rank(pairs.map((x) => x.actual));
+    const mx = (n - 1) / 2, num = px.reduce((s, v, i) => s + (v - mx) * (py[i] - mx), 0);
+    const den = Math.sqrt(px.reduce((s, v) => s + (v - mx) ** 2, 0) * py.reduce((s, v) => s + (v - mx) ** 2, 0));
+    return { n, mdape: round2(100 * (errs[Math.floor(n / 2)] ?? 0)), mape: round2(100 * mean),
+      spearman: round2(den ? num / den : 0), within_2x: round2(pairs.filter((x) => x.pred / x.actual >= 0.5 && x.pred / x.actual <= 2).length / n) };
+  }
+  const FAMILIES = ['naive-tvl', 'global', 'category', 'category-growth-age'];
+  function evaluateSplit(snapshot, salt) {
+    const split = splitPeers(snapshot, salt), params = fitFamilies(split.fit, snapshot.as_of);
+    const families = FAMILIES.map((id) => ({ id,
+      holdout: accuracy(split.holdout.map((p) => ({ pred: p.tvl_usd * multipleOf(id, p, params, snapshot.as_of), actual: p.mcap_usd }))) }));
+    const chosen = [...families].sort((x, y) => x.holdout.mdape - y.holdout.mdape || x.holdout.mape - y.holdout.mape || compare(x.id, y.id))[0].id;
+    return { salt, fit_n: split.fit.length, holdout_n: split.holdout.length, families, chosen };
+  }
+  function validateModels(snapshot) {
+    const first = evaluateSplit(snapshot, 'a'), second = evaluateSplit(snapshot, 'b');
+    const chosen = first.families.find((f) => f.id === first.chosen);
+    return { protocol: 'Traded peers only; hash split 70/30; fitted on fit, measured on holdout.',
+      chosen: first.chosen, chosen_family: chosen, fit_n: first.fit_n, holdout_n: first.holdout_n,
+      families: first.families.map((f) => ({ id: f.id, holdout: f.holdout })),
+      stability: { second_split_chosen: second.chosen, stable: second.chosen === first.chosen,
+        second_split_metrics: second.families.map((f) => ({ id: f.id, mdape: f.holdout.mdape })) },
+      selection_rule: 'lowest holdout MdAPE' };
+  }
+  const GAS_PER_TX = 0.35, BRIDGE_COST = 2.5, REWARD_SHARE = 0.02;
+  const familyRisk = { lending: 0.25, liquidity: 0.35, vault: 0.3, derivatives: 0.6, restricted: 0.6, 'general-research': 0.4 };
+  const familyTx = { lending: 2, liquidity: 3, vault: 2, derivatives: 1, restricted: 1, 'general-research': 1 };
+  function economics(s) {
+    const capital = Math.max(0, s.capital_usd || 0), tx = Math.max(1, s.steps || 1) * Math.max(1, s.tx_per_step || 1);
+    const gas = round2(tx * GAS_PER_TX), bridge = s.chains > 1 ? BRIDGE_COST : 0, costs = round2(gas + bridge);
+    const share = capital > 0 && s.tvl_usd > 0 ? capital / (s.tvl_usd + capital) : 0;
+    const gross = round2((s.implied_value_usd || 0) * share * REWARD_SHARE);
+    const net = round2(gross - costs);
+    const breakeven = gross > 0 ? Math.max(1, round2(costs / gross)) : null;
+    let verdict = 'skip', reason = 'no-capital-at-risk';
+    if (capital > 0) {
+      if (gross <= 0) { verdict = 'skip'; reason = 'no-expected-reward'; }
+      else if (net <= 0) { verdict = 'skip'; reason = 'net-below-cost'; }
+      else if (net >= 2 * costs && (s.principal_risk ?? 1) <= 0.4) { verdict = 'farm'; reason = 'net-exceeds-2x-costs-and-bounded-risk'; }
+      else { verdict = 'thin'; reason = net < 2 * costs ? 'net-under-2x-costs' : 'principal-risk-above-threshold'; }
+    }
+    return { capital_usd: capital, tx_count: tx, steps: s.steps, gas_per_tx_usd: GAS_PER_TX, gas_cost_usd: gas,
+      bridge_cost_usd: bridge, costs_usd: costs, weeks: round2((s.horizon_days || 14) / 7), principal_risk: s.principal_risk ?? 1,
+      reward_share: REWARD_SHARE, tvl_share: share, expected_gross_usd: gross, net_usd: net, breakeven_multiple: breakeven, verdict, reason };
+  }
   root.LaunchModel = Object.freeze({ classifyTokenRecord, parseSnapshot, calibratePeers, valueProtocol,
-    productRisks, farmPlan, buildRadar, validateBoard, dataScript });
+    productRisks, farmPlan, buildRadar, validateBoard, dataScript, splitPeers, fitFamilies, validateModels, economics });
 })(globalThis);

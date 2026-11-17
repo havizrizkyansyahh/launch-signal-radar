@@ -1,7 +1,7 @@
 {
   "schema": "launch-signal/build-audit/v1",
-  "generated_at_utc": "2026-11-17T01:20:17.958Z",
-  "duration_ms": 446,
+  "generated_at_utc": "2026-11-17T02:25:00.459Z",
+  "duration_ms": 496,
   "node_version": "v22.22.0",
   "node22_verified": true,
   "node22_note": "This audit ran on Node 22, the grader runtime.",
@@ -68,7 +68,7 @@
     {
       "name": "every farm_steps entry is 3-12 strings of 20-600 chars",
       "pass": true,
-      "detail": 5306
+      "detail": 4548
     },
     {
       "name": "every official watchlist member is ranked",
@@ -78,7 +78,7 @@
     {
       "name": "board.json is under 8 MiB",
       "pass": true,
-      "detail": 2282548
+      "detail": 2006025
     },
     {
       "name": "dashboard has index.html plus css and js",
@@ -96,13 +96,13 @@
       "pass": true,
       "detail": {
         "files": 5,
-        "bytes": 58542
+        "bytes": 64983
       }
     },
     {
       "name": "dashboard source text is under 65536 bytes",
       "pass": true,
-      "detail": 58542
+      "detail": 64983
     },
     {
       "name": "dashboard file names are dossier-safe",
@@ -132,7 +132,7 @@
     {
       "name": "root data.js exists and stays outside dashboard/",
       "pass": true,
-      "detail": 2282572
+      "detail": 2013634
     },
     {
       "name": "three valid screenshots within count, byte and dimension caps",
@@ -140,21 +140,21 @@
       "detail": [
         {
           "name": "01-board.jpg",
-          "bytes": 150893,
+          "bytes": 149185,
           "height": 900,
           "width": 1440,
           "ok": true
         },
         {
           "name": "02-detail.jpg",
-          "bytes": 196849,
+          "bytes": 191281,
           "height": 900,
           "width": 1440,
           "ok": true
         },
         {
           "name": "03-filtered.jpg",
-          "bytes": 142590,
+          "bytes": 152602,
           "height": 900,
           "width": 1440,
           "ok": true
@@ -165,20 +165,20 @@
       "name": "dossier.json equals an independent buildDossier rebuild",
       "pass": true,
       "detail": {
-        "bytes": 714073,
-        "sha256": "f46be647d14eecc89cf1dba3bd0a3606457a3cff1cef81a1480cd1284779efa9"
+        "bytes": 724326,
+        "sha256": "cf715228ccf765ce43e6da39e011f73a8297b1a391e2c852454dc4dcf812e21e"
       }
     },
     {
       "name": "dossier is at most 1.5 MiB",
       "pass": true,
-      "detail": 714073
+      "detail": 724326
     },
     {
       "name": "dossier text is complete (no cut marker)",
       "pass": true,
       "detail": {
-        "text_bytes": 58951
+        "text_bytes": 65393
       }
     },
     {

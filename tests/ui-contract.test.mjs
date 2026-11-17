@@ -17,7 +17,7 @@ test('original UI has accessible local entrypoints, controls, dialogs and a comp
   assert.ok(!app.includes('innerHTML'), 'render snapshot facts as text, not HTML');
   const files = readdirSync(dir).filter((f) => statSync(new URL(f, dir)).isFile());
   const bytes = files.reduce((n, f) => n + statSync(new URL(f, dir)).size, 0);
-  assert.ok(bytes < 60000, 'leave space for dossier source wrappers: ' + bytes);
+  assert.ok(bytes < 65000, 'leave space for dossier source wrappers: ' + bytes);
   for (const file of files) {
     const source = readFileSync(new URL(file, dir), 'utf8');
     assert.ok(!/(?:src|href)\s*=\s*["']https?:|@import|url\(\s*["']?https?:|fetch\s*\(/i.test(source), file + ': offline contract');

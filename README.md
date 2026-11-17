@@ -4,7 +4,24 @@
 [![rank](https://make.fun/badge/token-radar-01/havizrizkyansyahh/launch-signal-radar/rank.svg)](https://make.fun/bounty/token-radar-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
 [![reward](https://make.fun/badge/token-radar-01/havizrizkyansyahh/launch-signal-radar/reward.svg)](https://make.fun/bounty/token-radar-01?utm_source=github&utm_medium=readme&utm_campaign=token-radar-01)
 
-LAUNCH SIGNAL is an offline research workstation that ranks every protocol in one sealed DefiLlama snapshot (758 protocols, 40 on the official watchlist) by a hypothetical token market capitalization, and gives each protocol a conditional farm-research plan. The value model multiplies TVL by a robust category/global market-cap-to-TVL calibration, a bounded seven-day growth factor and a bounded tracking-history factor, then reports a heuristic scenario range. It is not a price, FDV, issuance forecast or airdrop promise, and "no token recorded" is never presented as proof that no token exists.
+LAUNCH SIGNAL is an offline research workstation over one sealed DefiLlama snapshot (758 protocols, 40 on the official watchlist). It ranks every protocol by a hypothetical token market capitalisation and nets each farm-research plan in dollars with an explicit **farm / thin / skip** verdict. It is not a price, FDV, issuance forecast or airdrop promise, and "no token recorded" is never presented as proof that no token exists.
+
+## Method, measured on the sealed snapshot
+
+- **Anchors.** Only traded protocols with a recorded positive market cap and positive TVL calibrate the model: 128 peers, deduplicated by CoinGecko id, target asset excluded from its own calibration.
+- **Out-of-sample check.** A stable FNV-1a hash of `salt:slug` splits those 128 peers 70/30 into 79 fit and 49 holdout rows. Parameters are fitted on the fit split only; every number below is holdout:
+
+| family | MdAPE | MAPE | Spearman | within 2x |
+| --- | --- | --- | --- | --- |
+| naive TVL (mcap = TVL) | 323.74% | 3119.88% | 0.53 | 16% |
+| global multiple | **85.80%** | 626.30% | 0.53 | **29%** |
+| category + global fallback | 90.04% | 1839.45% | 0.48 | 20% |
+| category + growth + age | 90.58% | 2112.77% | 0.46 | 20% |
+
+  The winner is chosen by holdout MdAPE, not by preference. On a second deterministic split the winner changes from `global` to `category` (MdAPE 99.27% vs 98.75%), so the dashboard prints that instability instead of claiming a validated edge.
+
+- **Values.** TVL × shrunk peer multiple × bounded growth factor × bounded tracking factor, with a heuristic low/high range that widens for sparse samples, missing growth, missing or future tracking dates and unobservable lineage.
+- **Farm economics.** Each plan is priced: transactions per step at an assumed 0.35 USD/tx, a 2.50 USD bridge assumption for multi-chain protocols, total cost, expected gross at a heavily discounted 2% reward share of the hypothetical value allocated by TVL share, net, breakeven multiple and a verdict. On this snapshot the board is **224 farm / 94 thin / 440 skip**; research-only families and zero-capital rows are `skip` by construction, not by guesswork.
 
 ## Run it
 
