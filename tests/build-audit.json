@@ -1,7 +1,7 @@
 {
   "schema": "launch-signal/build-audit/v1",
-  "generated_at_utc": "2026-11-17T02:25:00.459Z",
-  "duration_ms": 496,
+  "generated_at_utc": "2026-11-17T02:45:57.772Z",
+  "duration_ms": 553,
   "node_version": "v22.22.0",
   "node22_verified": true,
   "node22_note": "This audit ran on Node 22, the grader runtime.",
@@ -147,16 +147,16 @@
         },
         {
           "name": "02-detail.jpg",
-          "bytes": 191281,
+          "bytes": 203408,
           "height": 900,
           "width": 1440,
           "ok": true
         },
         {
           "name": "03-filtered.jpg",
-          "bytes": 152602,
-          "height": 900,
-          "width": 1440,
+          "bytes": 118373,
+          "height": 800,
+          "width": 1280,
           "ok": true
         }
       ]
@@ -165,14 +165,14 @@
       "name": "dossier.json equals an independent buildDossier rebuild",
       "pass": true,
       "detail": {
-        "bytes": 724326,
-        "sha256": "cf715228ccf765ce43e6da39e011f73a8297b1a391e2c852454dc4dcf812e21e"
+        "bytes": 694854,
+        "sha256": "9ea52f3669c1b0b5965d6685ddbb454d61c9921adfcdf3fe282d0ef662aa4f13"
       }
     },
     {
       "name": "dossier is at most 1.5 MiB",
       "pass": true,
-      "detail": 724326
+      "detail": 694854
     },
     {
       "name": "dossier text is complete (no cut marker)",
