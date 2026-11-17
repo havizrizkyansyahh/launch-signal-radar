@@ -9,12 +9,12 @@ Browser evidence: `tests/browser-evidence.json`, produced by the real-browser QA
 
 | layer | artifact | actual result |
 | --- | --- | --- |
-| Unit/integration (Node `node:test`) | `tests/*.test.ts`, `tests/*.test.mjs` | 14 tests, 14 pass, 0 fail, 1077 ms |
+| Unit/integration (Node `node:test`) | `tests/*.test.ts`, `tests/*.test.mjs` | 21 tests, 21 pass, 0 fail (re-run 2026-11-17 on Node v22.22.0) |
 | Build audit (independent script) | `tests/build-audit.mjs` | 24 checks, 24 pass, 0 fail, 403 ms |
-| Real browser QA | `tests/browser-checks.js` via Chromium | 14 checks pass, 0 console/page errors |
+| Real browser QA | `tests/browser-checks.js` via Chromium | 16 checks pass, 0 console/page errors (revised 2026-11-17: adds one-cell-per-column and separate range-cell checks) |
 | Server-side scoring / judge | not available locally | UNVERIFIED — cannot be claimed |
 
-Stack: Node v26.12.1, standard library only, no install step. **Node 22 grading-runtime execution is UNVERIFIED** — no Node 22 binary exists on this machine and no paid install was attempted. The entrypoint uses no TypeScript syntax, and the vendored helper is the official erasable-TS file; compatibility is expected but not measured here. The editor's automatic `npx` lint hook times out, so "lint passed" is not claimed.
+Stack: standard library only, no install step. Grading-runtime check (2026-11-17): tests and `tests/build-audit.mjs` were re-run with an official Node v22.22.0 linux-arm64 binary (SHA-256 1bf1eb9ee63ffc4e5d324c0b9b62cf4a289f44332dfef9607cea1a0d9596ba6f) and passed; earlier Node-22 claims in this report were made before that binary existed and were UNVERIFIED at the time. The entrypoint uses no TypeScript syntax, and the vendored helper is the official erasable-TS file; compatibility is expected but not measured here. The editor's automatic `npx` lint hook times out, so "lint passed" is not claimed.
 
 ## 2. Defects found and fixed in this phase
 

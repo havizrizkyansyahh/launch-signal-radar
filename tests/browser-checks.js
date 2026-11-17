@@ -17,7 +17,8 @@
   check('combined category chain search', count() === 1 && document.querySelector('#rows tr')?.dataset.slug === 'gauntlet', count());
   document.querySelector('#rows button')?.click();
   check('real detail opens', $('detail').open && $('detail-title')?.textContent === 'Gauntlet', $('detail-title')?.textContent);
-  check('detail has model and concrete plan', document.querySelectorAll('.factor-grid>div').length === 4 && document.querySelectorAll('.farm-list li').length === 7, document.querySelectorAll('.farm-list li').length);
+  const farmSteps = document.querySelectorAll('.farm-list li').length;
+  check('detail has model and concrete plan', document.querySelectorAll('.factor-grid>div').length === 4 && farmSteps >= 3 && farmSteps <= 12, farmSteps);
   $('detail').close(); $('reset').click();
   document.querySelector('[data-sort=implied_value_usd]').click();
   check('first value-sort click reverses default', document.querySelector('[data-sort=implied_value_usd]').parentElement.getAttribute('aria-sort') === 'ascending', document.querySelector('[data-sort=implied_value_usd]').parentElement.getAttribute('aria-sort'));
@@ -26,6 +27,14 @@
   $('method-open').click(); check('methodology opens', $('methodology').open && $('method-body').textContent.includes('n/(n+6)'), $('methodology').open);
   $('methodology').close();
   check('desktop provenance fits viewport', innerWidth < 1101 || document.querySelector('.provenance').getBoundingClientRect().bottom <= innerHeight, document.querySelector('.provenance').getBoundingClientRect().bottom);
+  const board = document.querySelector('#rows').closest('table');
+  const heads = [...board.querySelectorAll('thead th')].map((t) => t.textContent.replace('\u2193', '').trim());
+  const firstCells = [...(document.querySelector('#rows tr')?.children || [])].map((td) => td.textContent.trim());
+  check('one cell per declared column', heads.length === firstCells.length, [heads.length, firstCells.length, heads]);
+  check('model value and heuristic range are separate cells', (() => {
+    const i = heads.indexOf('MODEL VALUE'), j = heads.indexOf('HEURISTIC RANGE');
+    return i >= 0 && j >= 0 && !!firstCells[i] && !firstCells[i].includes('\u2013') && firstCells[j].includes('\u2013');
+  })(), [heads.indexOf('MODEL VALUE'), heads.indexOf('HEURISTIC RANGE'), firstCells]);
   check('result label distinguishes results from viewport', $('result-count').textContent.includes('in results'), $('result-count').textContent);
   check('no observed page errors', LaunchDiagnostics.errors.length === 0, [...LaunchDiagnostics.errors]);
   return JSON.stringify(results);

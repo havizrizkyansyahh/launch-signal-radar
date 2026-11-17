@@ -39,10 +39,9 @@
       button.addEventListener('click', () => showDetail(r, button));
       identity.append(button, node('div', (r.category || 'Unclassified') + ' · ' + r.chains.length + (r.chains.length === 1 ? ' chain' : ' chains'), 'protocol-sub'));
       const vcell = node('td', view.money(r.implied_value_usd), 'num number value');
-      vcell.append(node('span', view.band(r.uncertainty.low_usd, r.uncertainty.high_usd), 'range'));
       const verdict = view.verdict(r.economics.verdict), ncell = node('td', view.net(r.economics.net_usd), 'num number net ' + verdict.tone);
       const vd = node('td'); vd.append(node('span', verdict.mark + ' ' + verdict.label, 'badge ' + verdict.tone));
-      tr.append(identity, vcell, ncell, vd);
+      tr.append(identity, node('td', view.money(r.tvl_usd), 'num number'), ncell, vcell, node('td', view.band(r.uncertainty.low_usd, r.uncertainty.high_usd), 'num range'), vd);
       const record = node('td');
       record.append(node('span', r.token_status === 'no-token-recorded' ? 'NO TOKEN' : 'TOKEN', 'record ' + (r.token_status === 'no-token-recorded' ? 'early' : 'recorded')));
       record.append(node('span', r.watchlist ? 'watchlist' : r.risk_flags.length ? 'risk · research' : 'lineage n/a', 'row-note' + (r.watchlist ? ' watch' : '')));
@@ -51,7 +50,7 @@
     $('rows').replaceChildren(fragment);
     $('empty').hidden = selected.length !== 0;
     put('result-count', selected.length + ' of ' + data.rows.length + ' protocols · ' + selected.filter((r) => r.watchlist).length + ' official watchlist in results');
-    const names = { rank: 'GLOBAL RANK', name: 'PROTOCOL', tvl_usd: 'TVL', change_7d: '7D TVL', implied_value_usd: 'MODEL VALUE' };
+    const names = { rank: 'GLOBAL RANK', name: 'PROTOCOL', tvl_usd: 'TVL', implied_value_usd: 'MODEL VALUE' };
     names.net = 'NET USD';
     const key = state.sort || 'implied_value_usd', ascending = state.direction === 'asc';
     put('sort-note', names[key] + (ascending ? ' ASC' : ' DESC'));
